@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#285a75">
+  <meta name="description" content="Personal blood pressure, heart rate, blood sugar, and meal log.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <title>My Health Log</title>
+  <style>
+    :root{font-family:Arial,sans-serif;color:#173344;background:#eef4f7}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh}header{background:#285a75;color:#fff;padding:18px}
+    header h1{margin:0;font-size:1.55rem}header p{margin:5px 0 0;opacity:.9}
+    main{max-width:780px;margin:auto;padding:14px}.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px;position:sticky;top:0;background:#eef4f7;padding:8px 0;z-index:3}
+    button{font:inherit;border:0;border-radius:10px;padding:12px;cursor:pointer}.tab{background:#dbe7ed;color:#23495d;font-weight:700}.tab.active,.primary{background:#285a75;color:#fff}
+    .panel{display:none}.panel.active{display:block}.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:13px;box-shadow:0 2px 10px #17334418}
+    h2{font-size:1.2rem;margin:0 0 14px}h3{font-size:1.02rem;margin:0 0 6px}
+    label{display:block;font-weight:700;margin:12px 0 5px}.hint,.muted{font-size:.84rem;color:#617480;line-height:1.4}
+    input,select,textarea{width:100%;font:inherit;font-size:1rem;padding:12px;border:1.5px solid #9bb1bc;border-radius:10px;background:#fff;color:#173344}
+    textarea{min-height:88px;resize:vertical}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.bp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.actions button{flex:1;min-width:120px}.secondary{background:#dbe7ed;color:#23495d}.danger{background:#f7e4e2;color:#8a2923}
+    .success{background:#dff2e8;color:#17623e;padding:10px;border-radius:10px;margin-top:10px}.entry{border-left:5px solid #39799a}.entry.meal{border-left-color:#b27a25}
+    .entry-top{display:flex;justify-content:space-between;gap:12px}.entry-time{font-size:.84rem;color:#617480}.metrics{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.pill{background:#e8f0f4;padding:7px 9px;border-radius:9px;font-weight:700}
+    .note{white-space:pre-wrap;margin-top:8px}.delete{background:transparent;color:#9a302a;padding:5px}
+    .filters{display:grid;grid-template-columns:1fr 1fr;gap:8px}.empty{text-align:center;color:#617480;padding:30px 8px}
+    footer{font-size:.79rem;color:#617480;line-height:1.45;padding:8px 2px 24px}
+    @media(max-width:520px){.grid,.filters{grid-template-columns:1fr}.tabs{font-size:.9rem}.card{padding:14px}}
+    @media print{header,.tabs,#entryPanel,#backupPanel,.no-print,footer{display:none!important}body,main{background:#fff;padding:0}.panel{display:block!important}.card{box-shadow:none;border:1px solid #bbb;break-inside:avoid}}
+  </style>
+</head>
+<body>
+<header><h1>My Health Log</h1><p>Blood pressure, heart rate, blood sugar and meals</p></header>
+<main>
+  <nav class="tabs"><button class="tab active" data-tab="entryPanel">Add Entry</button><button class="tab" data-tab="historyPanel">History</button><button class="tab" data-tab="backupPanel">Backup</button></nav>
+
+  <section id="entryPanel" class="panel active">
+    <div class="card">
+      <div class="grid"><button id="readingType" class="primary">Health Reading</button><button id="mealType" class="secondary">Meal or Snack</button></div>
+    </div>
+    <form id="readingForm" class="card">
+      <h2>Add health reading</h2>
+      <label for="readingDate">Date and time</label><input id="readingDate" type="datetime-local" required>
+      <label>Blood pressure readings <span class="hint">(optional)</span></label>
+      <div class="bp"><input id="sys1" type="number" inputmode="numeric" placeholder="Systolic #1"><input id="dia1" type="number" inputmode="numeric" placeholder="Diastolic #1"></div>
+      <div class="bp"><input id="sys2" type="number" inputmode="numeric" placeholder="Systolic #2"><input id="dia2" type="number" inputmode="numeric" placeholder="Diastolic #2"></div>
+      <div class="bp"><input id="sys3" type="number" inputmode="numeric" placeholder="Systolic #3"><input id="dia3" type="number" inputmode="numeric" placeholder="Diastolic #3"></div>
+      <div id="average" class="hint">Average will be calculated from completed pairs.</div>
+      <div class="grid"><div><label for="heartRate">Heart rate</label><input id="heartRate" type="number" inputmode="numeric" placeholder="Beats per minute"></div><div><label for="glucose">Blood sugar</label><input id="glucose" type="number" inputmode="decimal" placeholder="mg/dL"></div></div>
+      <label for="glucoseTiming">Blood sugar timing</label><select id="glucoseTiming"><option value="">Not specified</option><option>Fasting</option><option>Before meal</option><option>1 hour after meal</option><option>2 hours after meal</option><option>Bedtime</option><option>Other</option></select>
+      <label for="readingNotes">Notes</label><textarea id="readingNotes" placeholder="Symptoms, medication, activity, or anything else"></textarea>
+      <div class="actions"><button class="primary" type="submit">Save reading</button></div><div id="readingSaved"></div>
+    </form>
+    <form id="mealForm" class="card" hidden>
+      <h2>Add meal or snack</h2>
+      <label for="mealDate">Date and time</label><input id="mealDate" type="datetime-local" required>
+      <label for="mealKind">Meal</label><select id="mealKind"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option><option>Drink</option><option>Other</option></select>
+      <label for="foods">Foods and drinks</label><textarea id="foods" required placeholder="Example: oatmeal, blueberries, coffee with milk"></textarea>
+      <label for="carbs">Carbohydrates <span class="hint">(optional)</span></label><input id="carbs" type="number" inputmode="decimal" step="0.1" placeholder="Total grams">
+      <label for="mealNotes">Notes</label><textarea id="mealNotes" placeholder="Portion, restaurant, how you felt, or other details"></textarea>
+      <div class="actions"><button class="primary" type="submit">Save meal</button></div><div id="mealSaved"></div>
+    </form>
+  </section>
+
+  <section id="historyPanel" class="panel">
+    <div class="card no-print">
+      <h2>History and reports</h2>
+      <div class="filters"><div><label for="fromDate">From</label><input id="fromDate" type="date"></div><div><label for="toDate">Through</label><input id="toDate" type="date"></div></div>
+      <div class="actions"><button id="applyFilter" class="primary">Show entries</button><button id="exportCsv" class="secondary">Export CSV</button><button id="printReport" class="secondary">Print / Save PDF</button></div>
+      <p class="hint">Choose a date range before exporting a report for your doctor.</p>
+    </div>
+    <div id="summary"></div><div id="history"></div>
+  </section>
+
+  <section id="backupPanel" class="panel">
+    <div class="card"><h2>Protect your records</h2><p>Your records stay on this device. Export a backup regularly so they are not lost if the app is removed or its data is cleared.</p>
+      <div class="actions"><button id="backupBtn" class="primary">Export backup</button><button id="restoreBtn" class="secondary">Restore backup</button></div><input id="restoreFile" type="file" accept=".json,application/json" hidden>
+    </div>
+  </section>
+  <footer>This app records information you enter and does not diagnose or provide treatment advice. Contact your healthcare professional about questions or concerning readings.</footer>
+</main>
+<script>
+const DB_NAME="my-health-log",STORE="entries";let db;
+const $=s=>document.querySelector(s),$$=s=>document.querySelectorAll(s);
+function nowLocal(){const d=new Date(Date.now()-new Date().getTimezoneOffset()*60000);return d.toISOString().slice(0,16)}
+function openDb(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE,{keyPath:"id"});r.onsuccess=()=>{db=r.result;resolve()};r.onerror=()=>reject(r.error)})}
+function put(x){return new Promise((res,rej)=>{const r=db.transaction(STORE,"readwrite").objectStore(STORE).put(x);r.onsuccess=res;r.onerror=()=>rej(r.error)})}
+function all(){return new Promise((res,rej)=>{const r=db.transaction(STORE).objectStore(STORE).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function remove(id){return new Promise((res,rej)=>{const r=db.transaction(STORE,"readwrite").objectStore(STORE).delete(id);r.onsuccess=res;r.onerror=()=>rej(r.error)})}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function avg(a){const n=a.filter(Number.isFinite);return n.length?Math.round(n.reduce((x,y)=>x+y,0)/n.length):null}
+function bpAverage(){const pairs=[[+$("#sys1").value,+$("#dia1").value],[+$("#sys2").value,+$("#dia2").value],[+$("#sys3").value,+$("#dia3").value]].filter(x=>x[0]&&x[1]);const s=avg(pairs.map(x=>x[0])),d=avg(pairs.map(x=>x[1]));$("#average").textContent=s?("Average: "+s+"/"+d+" from "+pairs.length+" reading"+(pairs.length>1?"s":"")):"Average will be calculated from completed pairs.";return {pairs,s,d}}
+function showType(meal){$("#readingForm").hidden=meal;$("#mealForm").hidden=!meal;$("#readingType").className=meal?"secondary":"primary";$("#mealType").className=meal?"primary":"secondary"}
+function msg(el,text){el.innerHTML='<div class="success">'+text+'</div>';setTimeout(()=>el.innerHTML="",2500)}
+function filtered(items){const f=$("#fromDate").value,t=$("#toDate").value;return items.filter(x=>(!f||x.datetime>=f)&&(!t||x.datetime<=t+"T23:59")).sort((a,b)=>b.datetime.localeCompare(a.datetime))}
+function dateText(v){return new Date(v).toLocaleString([], {dateStyle:"medium",timeStyle:"short"})}
+function entryHtml(x){if(x.type==="meal")return `<article class="card entry meal"><div class="entry-top"><div><h3>${esc(x.mealKind)}</h3><div class="entry-time">${dateText(x.datetime)}</div></div><button class="delete no-print" data-delete="${x.id}">Delete</button></div><div class="note">${esc(x.foods)}</div>${x.carbs?'<div class="metrics"><span class="pill">'+esc(x.carbs)+' g carbs</span></div>':""}${x.notes?'<div class="note muted">'+esc(x.notes)+'</div>':""}</article>`;
+return `<article class="card entry"><div class="entry-top"><div><h3>Health reading</h3><div class="entry-time">${dateText(x.datetime)}</div></div><button class="delete no-print" data-delete="${x.id}">Delete</button></div><div class="metrics">${x.avgSys?'<span class="pill">BP '+x.avgSys+'/'+x.avgDia+'</span>':""}${x.heartRate?'<span class="pill">Heart '+x.heartRate+'</span>':""}${x.glucose?'<span class="pill">Sugar '+x.glucose+' mg/dL</span>':""}</div>${x.glucoseTiming?'<div class="muted">'+esc(x.glucoseTiming)+'</div>':""}${x.pairs?.length>1?'<div class="muted">BP readings: '+x.pairs.map(p=>p[0]+'/'+p[1]).join(", ")+'</div>':""}${x.notes?'<div class="note">'+esc(x.notes)+'</div>':""}</article>`}
+async function render(){const items=filtered(await all()),health=items.filter(x=>x.type==="reading"),as=avg(health.map(x=>x.avgSys).filter(Boolean)),ad=avg(health.map(x=>x.avgDia).filter(Boolean)),ah=avg(health.map(x=>+x.heartRate).filter(Boolean)),ag=avg(health.map(x=>+x.glucose).filter(Boolean));$("#summary").innerHTML=items.length?`<div class="card"><h2>Selected period</h2><div class="metrics">${as?'<span class="pill">Avg BP '+as+'/'+ad+'</span>':""}${ah?'<span class="pill">Avg heart '+ah+'</span>':""}${ag?'<span class="pill">Avg sugar '+ag+' mg/dL</span>':""}</div><div class="muted">${items.length} total entries</div></div>`:"";$("#history").innerHTML=items.length?items.map(entryHtml).join(""):'<div class="empty">No entries in this date range.</div>'}
+function download(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+async function csv(){const items=filtered(await all()),rows=[["Type","Date/Time","Avg Systolic","Avg Diastolic","BP Readings","Heart Rate","Blood Sugar mg/dL","Sugar Timing","Meal","Foods/Drinks","Carbs g","Notes"]];items.reverse().forEach(x=>rows.push([x.type,x.datetime,x.avgSys||"",x.avgDia||"",x.pairs?x.pairs.map(p=>p.join("/")).join("; "):"",x.heartRate||"",x.glucose||"",x.glucoseTiming||"",x.mealKind||"",x.foods||"",x.carbs||"",x.notes||""]));const q=v=>'"'+String(v).replaceAll('"','""')+'"';download("health-log-"+new Date().toISOString().slice(0,10)+".csv",rows.map(r=>r.map(q).join(",")).join("\r\n"),"text/csv")}
+$$(".tab").forEach(b=>b.onclick=()=>{$$(".tab,.panel").forEach(x=>x.classList.remove("active"));b.classList.add("active");$("#"+b.dataset.tab).classList.add("active");if(b.dataset.tab==="historyPanel")render()});
+$("#readingType").onclick=()=>showType(false);$("#mealType").onclick=()=>showType(true);["#sys1","#dia1","#sys2","#dia2","#sys3","#dia3"].forEach(s=>$(s).addEventListener("input",bpAverage));
+$("#readingForm").onsubmit=async e=>{e.preventDefault();const b=bpAverage();if(!b.s&&!$("#heartRate").value&&!$("#glucose").value){alert("Enter at least one health reading.");return}await put({id:crypto.randomUUID(),type:"reading",datetime:$("#readingDate").value,pairs:b.pairs,avgSys:b.s,avgDia:b.d,heartRate:$("#heartRate").value,glucose:$("#glucose").value,glucoseTiming:$("#glucoseTiming").value,notes:$("#readingNotes").value});e.target.reset();$("#readingDate").value=nowLocal();bpAverage();msg($("#readingSaved"),"Reading saved on this device.")};
+$("#mealForm").onsubmit=async e=>{e.preventDefault();await put({id:crypto.randomUUID(),type:"meal",datetime:$("#mealDate").value,mealKind:$("#mealKind").value,foods:$("#foods").value,carbs:$("#carbs").value,notes:$("#mealNotes").value});e.target.reset();$("#mealDate").value=nowLocal();msg($("#mealSaved"),"Meal saved on this device.")};
+$("#applyFilter").onclick=render;$("#exportCsv").onclick=csv;$("#printReport").onclick=async()=>{await render();window.print()};$("#history").onclick=async e=>{const b=e.target.closest("[data-delete]");if(b&&confirm("Delete this entry?")){await remove(b.dataset.delete);render()}};
+$("#backupBtn").onclick=async()=>download("my-health-log-backup-"+new Date().toISOString().slice(0,10)+".json",JSON.stringify(await all(),null,2),"application/json");$("#restoreBtn").onclick=()=>$("#restoreFile").click();$("#restoreFile").onchange=async e=>{try{const items=JSON.parse(await e.target.files[0].text());if(!Array.isArray(items))throw 0;for(const x of items)await put(x);alert(items.length+" records restored.")}catch{alert("That backup file could not be read.")}e.target.value=""};
+openDb().then(()=>{$("#readingDate").value=$("#mealDate").value=nowLocal();const d=new Date(),first=new Date(d.getFullYear(),d.getMonth(),1);$("#fromDate").value=first.toISOString().slice(0,10);$("#toDate").value=d.toISOString().slice(0,10)}).catch(()=>alert("This browser could not open the health log database."));
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js");
+</script></body></html>

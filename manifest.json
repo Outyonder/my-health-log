@@ -1,0 +1,1 @@
+{"name":"My Health Log","short_name":"Health Log","description":"Personal blood pressure, heart rate, blood sugar and meal log.","start_url":"./","display":"standalone","background_color":"#eef4f7","theme_color":"#285a75","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
